@@ -8,8 +8,8 @@ export interface ITask {
 export interface ILogItem {
   logId: string;
   logAuthor: string;
-  logmessage: string;
-  loTimestamp: string;
+  logMessage: string;
+  logTimestamp: string;
 }
 
 export interface IBoard {
