@@ -21,9 +21,21 @@ type TAddTaskAction = {
   task: ITask;
 }
 
+type TSetTaskACtion = TAddTaskAction;
+
 type TDeleteListAction = {
   boardId: string;
   listId: string;
+}
+
+type TDeleteTaskAction = {
+  boardId: string;
+  listId: string;
+  taskId: string;
+}
+
+type TDeleteBoardAction = {
+  boardId: string;
 }
 
 const initialState: TBoardState = {
@@ -75,6 +87,11 @@ const boardSlice = createSlice({
     addBoard: (state, {payload}: PayloadAction<TAddBoardAction>) => {
       state.boardArray.push(payload.board);
     },
+    deleteBoard: (state, {payload}: PayloadAction<TDeleteBoardAction>) => {
+      state.boardArray = state.boardArray.filter(board =>
+        board.boardId !== payload.boardId
+      )
+    },
     addList: (state, {payload}: PayloadAction<TAddListAction>) => {
       state.boardArray.map((board) => (
         board.boardId === payload.boardId ? 
@@ -104,10 +121,50 @@ const boardSlice = createSlice({
     },
     setModalActivity: (state, {payload}: PayloadAction<boolean>) => {
       state.modalActive = payload;
-    }
+    },
+    setTask: (state, {payload}: PayloadAction<TSetTaskACtion>) => {
+      state.boardArray = state.boardArray.map(board => 
+        board.boardId === payload.boardId ?
+        {
+          ...board,
+          lists: board.lists.map(list =>
+            list.listId === payload.listId ?
+            {
+              ...list,
+              tasks: list.tasks.map(task =>
+                task.taskId === payload.task.taskId ?
+                payload.task:
+                task
+              )
+            }:
+            list
+          )
+        } :
+        board
+      )
+    },
+    deleteTask: (state, {payload}: PayloadAction<TDeleteTaskAction>) => {
+      state.boardArray = state.boardArray.map(board => 
+        board.boardId === payload.boardId ?
+        {
+          ...board,
+          lists: board.lists.map(list =>
+            list.listId === payload.listId ?
+            {
+              ...list,
+              tasks: list.tasks.filter(task =>
+                task.taskId !== payload.taskId
+              )
+            } :
+            list
+          )
+        } :
+        board
+      )
+    },
   }
 });
 
 export const boardReducer = boardSlice.reducer; 
 
-export const { addBoard, addList, addTask, deleteList, setModalActivity } = boardSlice.actions;
+export const { addBoard, deleteBoard, addList, addTask, deleteList, setModalActivity, setTask, deleteTask } = boardSlice.actions;

@@ -3,7 +3,7 @@ import reducer from "./reducer/reducer.ts";
 
 
 const store = configureStore({
-  reducer
+  reducer: reducer
 });
 
 export type RootState = ReturnType<typeof store.getState>;
