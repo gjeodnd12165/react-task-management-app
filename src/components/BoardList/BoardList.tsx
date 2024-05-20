@@ -1,9 +1,14 @@
 import React, { useState } from 'react'
-import { useTypedSelector } from '../../hooks/redux';
+import { useTypedDispatch, useTypedSelector } from '../../hooks/redux';
 import SideForm from './SideForm/SideForm';
 import { FiPlusCircle } from 'react-icons/fi';
 import { addButton, addSection, boardItem, boardItemActive, container, title } from './BoardList.css';
 import clsx from 'clsx';
+import { GoSignIn, GoSignOut } from 'react-icons/go';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { app } from '../../firebase';
+import { removeUser, setUser } from '../../store/slices/userSlice';
+import { useAuth } from '../../hooks/useAuth';
 
 type TBoardListProps = {
   activeBoardId: string;
@@ -14,13 +19,33 @@ const BoardList = ({
   activeBoardId,
   setActiveBoardId
 }: TBoardListProps) => {
+  const dispatch = useTypedDispatch();
   
   const { boardArray } = useTypedSelector(state => state.board);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const { isAuth } = useAuth();
+
+
   const handleClick = () => {
     setIsFormOpen(prev => !prev);
   };
+
+  const handleSignIn = async () => {
+    const userCredential = await signInWithPopup(auth, provider);
+    dispatch(setUser({
+      email: userCredential.user.email ?? "no email",
+      id: userCredential.user.uid
+    }));
+  }
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    dispatch(removeUser());
+  }
 
   return (
     <div className={container}>
@@ -59,7 +84,12 @@ const BoardList = ({
             onClick={handleClick}
           />
         }
-      </div>
+        {
+        isAuth ?
+          <GoSignOut className={addButton} onClick={handleSignOut}/> :
+          <GoSignIn className={addButton} onClick={handleSignIn}/>
+        }
+        </div>
     </div>
   )
 }
